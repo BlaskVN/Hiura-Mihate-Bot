@@ -1,4 +1,4 @@
-const { Events } = require('discord.js');
+const { Events, Activity, ActivityType, Presence } = require('discord.js');
 
 module.exports = {
 	name: Events.ClientReady,
@@ -6,8 +6,8 @@ module.exports = {
 	execute(client) {
 		console.log(`Ready! Logged in as ${client.user.tag}`);
 		client.user.setPresence({
-			activities: [{ name: 'Midou Kenshirou cực căng', type: 'PLAYING' }], // PLAYING, WATCHING, LISTENING, STREAMING
-			status: 'dnd' // online, idle, dnd, invisible
+			activities: [{ name: 'Midou Kenshirou cực căng', type: ActivityType.Playing }], // .Listening, .Watching, .Competing, .Streaming, .Playing, .Custom
+			status: PresenceStatus.Online, // .Online, .Idle, .DoNotDisturb, .Invisible
 		});
 	},
 };
