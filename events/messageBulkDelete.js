@@ -15,33 +15,35 @@ module.exports = {
         const logChannel = guild.channels.cache.get(logChannelId);
         if (!logChannel) return;
 
-        const messageFields = [];
-        let count = 1;
+        // Lấy tên kênh
+        const channelName = messages.first().channel?.name
+            ? `#${messages.first().channel.name}`
+            : '#None';
+        
+        const lines = [];
         for (const [, msg] of messages) {
-            messageFields.push({
-                name: `Tin nhắn #${count}`,
-                value: msg.content || 'Không có nội dung',
-            });
-            count++;
+            const username = msg.author?.username ?? 'Unknown';
+            lines.push(`[${username}]: ${msg.content || 'Không có nội dung'}`);
         }
+        
+        let messageString = `**${messages.size}** Messages purged in ${channelName}\n`;
+        messageString += lines.join('\n');
 
-        function chunkArray(array, size) {
-            const result = [];
-            for (let i = 0; i < array.length; i += size) {
-                result.push(array.slice(i, i + size));
+        function chunkString(str, size) {
+            const chunks = [];
+            for (let i = 0; str.length; i += size) {
+                chunks.push(str.slice(i, i + size));
             }
-            return result;
+            return chunks;
         }
 
-        const chunkedFields = chunkArray(messageFields, 25);
+        const pieces = chunkString(messageString, 4096);
 
-        chunkedFields.forEach((fieldsGroup, index) => {
+        pieces.forEach((piece, index) => {
             const embed = new EmbedBuilder()
                 .setColor('#ff0000')
-                .setTitle('Bulk Message Purge')
-                .setDescription(`Một loạt tin nhắn đã bị xóa - Total: ${messages.size}\nTrang ${index + 1} / ${chunkedFields.length}`)
-                .addFields(fieldsGroup);
-
+                .setTitle('Message Purged')
+                .setDescription(piece + `\nTrang ${index + 1}/${pieces.length}`);
             logChannel.send({ embeds: [embed] });
         });
     },

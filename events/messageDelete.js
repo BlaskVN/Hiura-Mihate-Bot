@@ -37,7 +37,7 @@ module.exports = {
             .addFields(
                 { name: 'Author', value: `${message.author}`, inline: true },
                 { name: 'Tag', value: message.author.tag, inline: true },
-                { name: 'Channel', value: `${message.channel}`, inline: false },
+                { name: 'In channel', value: `${message.channel}`, inline: false },
                 { name: 'Content', value: message.content || 'Méo có đâu mà đọc XD', inline: false }
             );
         
