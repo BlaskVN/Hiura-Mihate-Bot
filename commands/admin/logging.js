@@ -18,7 +18,7 @@ module.exports = {
                 .setDescription('Xóa cài đặt log hiện tại')
                 .setRequired(false)),
     async execute(interaction) {
-        if (!interaction.memberPermissions.has('ADMINISTRATOR')) {
+        if (!interaction.member.permissions.has('ADMINISTRATOR')) {
             return interaction.reply({ content: 'Bạn không có quyền thực hiện lệnh này.', ephemeral: true });
         }
 
