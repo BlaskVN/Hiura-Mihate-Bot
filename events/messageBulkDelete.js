@@ -21,11 +21,13 @@ module.exports = {
             : '#None';
         
         const lines = [];
+        lines.push(`\`\`\``);
         for (const [, msg] of messages) {
             const username = msg.author?.username ?? 'Unknown';
-            lines.push(`\`\`\`[${username}]: ${msg.content || 'Không có nội dung'}\`\`\``);
+            lines.push(`[${username}]: ${msg.content || 'Không có nội dung'}`);
         }
-        
+        lines.push(`\`\`\``);
+
         let messageString = `**${messages.size}** messages purged\n`;
         messageString += lines.join('\n');
 
