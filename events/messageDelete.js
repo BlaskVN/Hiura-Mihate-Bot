@@ -14,6 +14,8 @@ module.exports = {
         const logChannel = message.guild.channels.cache.get(logChannelId);
         if (!logChannel) return; 
 
+        if (message.author.bot && message.channel.id === logChannelId) return;
+
         const fetchedLogs = await message.guild.fetchAuditLogs({
             limit: 1,
             type: 72,
