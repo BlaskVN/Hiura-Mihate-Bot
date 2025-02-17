@@ -36,7 +36,7 @@ module.exports = {
             .setThumbnail(message.author.displayAvatarURL({ dynamic: true }))
             .addFields(
                 { name: 'Author', value: `${message.author}`, inline: true },
-                { name: 'Tag', value: message.author.tag, inline: true },
+                { name: 'ID', value: message.author.id, inline: true },
                 { name: 'In channel', value: `${message.channel}`, inline: false },
                 { name: 'Content', value: message.content || 'Méo có đâu mà đọc XD', inline: false }
             );
@@ -44,7 +44,7 @@ module.exports = {
         if (executor !== 'NULL') {
             embed.addFields(
                 { name: 'Deleted by', value: `${executor}`,inline: true },
-                { name: 'Tag', value: executor.tag, inline: true }
+                { name: 'ID', value: executor.id, inline: true }
             );
         }
 

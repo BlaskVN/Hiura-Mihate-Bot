@@ -13,7 +13,6 @@ module.exports = {
 		
 		const serverEmbed = new EmbedBuilder()
             .setTitle('Server Info')
-            .setDescription(`Information about ${interaction.guild.name}`)
             .addFields(
                 { name: 'Name', value: interaction.guild.name },
                 { name: 'ID', value: interaction.guild.id },

@@ -14,9 +14,8 @@ module.exports = {
 			.setTitle(`Thông tin của ${user.username}`)
 			.setImage(user.displayAvatarURL({ dynamic: true, size: 4096 })) 
 			.addFields(
-				{ name: "🆔 ID:", value: user.id, inline: true },
 				{ name: "👤 Username:", value: user.username, inline: true },
-				{ name: "🏷️ Tag:", value: user.tag, inline: true },
+				{ name: "🆔 ID:", value: user.id, inline: true },
 				{ name: "📆 Ngày tạo tài khoản:", value: `<t:${Math.floor(user.createdTimestamp / 1000)}:f>`, inline: false },
 			);
 

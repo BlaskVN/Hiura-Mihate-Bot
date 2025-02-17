@@ -45,7 +45,7 @@ module.exports = {
             const embed = new EmbedBuilder()
                 .setColor('#ff0000')
                 .setTitle('Message Purged in ' + channelName)
-                .setDescription(piece + `\nTrang ${index + 1}/${pieces.length}`);
+                .setDescription(piece + `\nPage ${index + 1}/${pieces.length}`);
             logChannel.send({ embeds: [embed] });
         });
     },
