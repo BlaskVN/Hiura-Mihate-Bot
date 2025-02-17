@@ -23,10 +23,10 @@ module.exports = {
         const lines = [];
         for (const [, msg] of messages) {
             const username = msg.author?.username ?? 'Unknown';
-            lines.push(`[${username}]: ${msg.content || 'Không có nội dung'}`);
+            lines.push(`\`[${username}]: ${msg.content || 'Không có nội dung'}\``);
         }
         
-        let messageString = `**${messages.size}** Messages purged in ${channelName}\n`;
+        let messageString = `**${messages.size}** messages purged\n`;
         messageString += lines.join('\n');
 
         function chunkString(str, size) {
@@ -42,7 +42,7 @@ module.exports = {
         pieces.forEach((piece, index) => {
             const embed = new EmbedBuilder()
                 .setColor('#ff0000')
-                .setTitle('Message Purged')
+                .setTitle('Message Purged in ' + channelName)
                 .setDescription(piece + `\nTrang ${index + 1}/${pieces.length}`);
             logChannel.send({ embeds: [embed] });
         });
