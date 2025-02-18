@@ -1,6 +1,6 @@
 <h1 align="center">
   <br>
-  <a><img src="https://media.discordapp.net/attachments/1340288397591318579/1341365662525947914/bannerHiura.gif?ex=67b5bb9f&is=67b46a1f&hm=b46452488bc132bf51ffbd81200cbb21665bdbcbf69b580d255912e979daa12d&=&width=960&height=540" alt="Hiura Mihate - Discord Bot"></a>
+  <a><img src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExd2c0eWR5ZGwyMDFtb3RlZTJ6bXM4bzJ1ZWRkZ3U3cnprdGlia3p0diZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/r2SeyaFNADOfW4nOxx/giphy.gif" alt="Hiura Mihate - Discord Bot"></a>
   <br>
   Hiura Mihate Discord Bot
   <br>
@@ -53,7 +53,7 @@ Please follow these step:
     cd Hiura-Mihate-Bot
     touch .env
     ```
-3. Open `.env` file and add your bottoken, client id. Example:
+3. Open `.env` file and add your `bot token`, `client id`. Example:
     ```
     TOKEN=xxxxxxxxxxxxxxxx
     CLIENT_ID=xxxxxxxxxxxx
