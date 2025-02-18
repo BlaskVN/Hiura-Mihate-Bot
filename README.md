@@ -64,7 +64,7 @@ Please follow these step:
     ```
 5. Deploy slash commands:
     ```bash
-    npm deploy
+    npm run deploy
     ```
 6. Start your bot:
     ```bash
