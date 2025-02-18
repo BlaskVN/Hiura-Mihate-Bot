@@ -27,9 +27,9 @@ const rest = new REST().setToken(process.env.TOKEN);
 
 (async () => {
     try {
-        console.log('Đang xóa các lệnh cũ...');
+        // console.log('Đang xóa các lệnh cũ...');
 
-        await rest.put(Routes.applicationCommands(process.env.CLIENT_ID), { body: [] });
+        // await rest.put(Routes.applicationCommands(process.env.CLIENT_ID), { body: [] });
         
         console.log(`Bắt đầu tải ${commands.length} lệnh...`);
         
