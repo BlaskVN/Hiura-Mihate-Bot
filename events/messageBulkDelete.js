@@ -15,7 +15,6 @@ module.exports = {
         const logChannel = guild.channels.cache.get(logChannelId);
         if (!logChannel) return;
 
-        // Lấy tên kênh
         const channelName = messages.first().channel?.name
             ? `#${messages.first().channel.name}`
             : '#None';
