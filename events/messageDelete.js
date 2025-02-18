@@ -5,6 +5,7 @@ module.exports = {
     name: Events.MessageDelete,
     async execute(message) {
         if (message.partial) return;
+        if (message.author.bot) return;
 
         const logSettings = JSON.parse(fs.readFileSync('logSettings.json', 'utf8'));
         const guildSettings = logSettings[message.guild.id];
@@ -14,7 +15,7 @@ module.exports = {
         const logChannel = message.guild.channels.cache.get(logChannelId);
         if (!logChannel) return; 
 
-        if (message.author.bot && message.channel.id === logChannelId) return;
+        // if (message.author.bot && message.channel.id === logChannelId) return;
 
         const fetchedLogs = await message.guild.fetchAuditLogs({
             limit: 1,

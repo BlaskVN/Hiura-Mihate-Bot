@@ -71,6 +71,18 @@ Please follow these step:
     npm start --silent
     ```
 
+<!-- # Contributors
+
+We would like to thank the following contributors for their support and contributions to the project:
+
+<table>
+  <tr>
+    <td align="center"><a href="https://github.com/contributor1"><img src="https://avatars.githubusercontent.com/u/1?v=4" width="100px;" alt="" style="border-radius: 50%;"/><br /><sub><b>Contributor 1</b></sub></a></td>
+    <td align="center"><a href="https://github.com/contributor2"><img src="https://avatars.githubusercontent.com/u/2?v=4" width="100px;" alt="" style="border-radius: 50%;"/><br /><sub><b>Contributor 2</b></sub></a></td>
+    <td align="center"><a href="https://github.com/contributor3"><img src="https://avatars.githubusercontent.com/u/3?v=4" width="100px;" alt="" style="border-radius: 50%;"/><br /><sub><b>Contributor 3</b></sub></a></td>
+  </tr>
+</table> -->
+
 # License
 
 Released under the [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.en.html) license.
