@@ -3,7 +3,8 @@ const fs = require('fs').promises;
 const path = require('path');
 
 const CACHE_FILE = path.join(__dirname, 'tagCache.json');
-const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24H
+const STATUS_FILE = path.join(__dirname, 'cacheStatus.json');
+const CACHE_DURATION = 24 * 60 * 60 * 1000 * 30; // 30 days
 
 const CATEGORY_MAP = {
     0: "General",
@@ -18,27 +19,84 @@ class TagManager {
         this.tags = new Map();
         this.lastUpdate = null;
         this.categorizedTags = {};
+        this.isLoading = false;
+        this.loadPromise = null;
+    }
+
+    async loadCacheStatus() {
+        try {
+            const data = await fs.readFile(STATUS_FILE, 'utf8');
+            const status = JSON.parse(data);
+            return status;
+        } catch (error) {
+            return {
+                lastUpdate: null,
+                totalTags: 0,
+                lastUpdateTime: null
+            };
+        }
+    }
+
+    async saveCacheStatus() {
+        try {
+            const status = {
+                lastUpdate: this.lastUpdate ? this.lastUpdate.toISOString() : null,
+                totalTags: this.tags.size,
+                lastUpdateTime: new Date().toISOString()
+            };
+            await fs.writeFile(STATUS_FILE, JSON.stringify(status, null, 2));
+            return true;
+        } catch (error) {
+            console.error('[ERROR] Lỗi khi lưu trạng thái cache:', error);
+            return false;
+        }
     }
 
     async loadCache() {
+        if (this.isLoading) {
+            return this.loadPromise;
+        }
+
+        this.isLoading = true;
+        this.loadPromise = this._loadCache();
+        
         try {
-            const data = await fs.readFile(CACHE_FILE, 'utf8');
-            const cache = JSON.parse(data);
-            this.tags = new Map(Object.entries(cache.tags));
-            this.categorizedTags = cache.categorizedTags;
-            this.lastUpdate = new Date(cache.lastUpdate);
+            const result = await this.loadPromise;
+            return result;
+        } finally {
+            this.isLoading = false;
+            this.loadPromise = null;
+        }
+    }
+
+    async _loadCache() {
+        try {
+            // Đọc trạng thái cache trước
+            const status = await this.loadCacheStatus();
+            const lastUpdate = status.lastUpdate ? new Date(status.lastUpdate) : null;
             
-            // Kiểm tra thời gian cập nhật cuối cùng
-            const timeSinceLastUpdate = Date.now() - this.lastUpdate.getTime();
-            const hoursRemaining = Math.floor((CACHE_DURATION - timeSinceLastUpdate) / (60 * 60 * 1000));
-            
-            if (timeSinceLastUpdate < CACHE_DURATION) {
-                console.log(`[INFO] Cache còn hợp lệ, còn ${hoursRemaining} giờ nữa mới cần cập nhật`);
-                return true;
-            } else {
+            if (!lastUpdate) {
+                console.log('[INFO] Chưa có cache, cần cập nhật');
+                return false;
+            }
+
+            const timeSinceLastUpdate = Date.now() - lastUpdate.getTime();
+            if (timeSinceLastUpdate >= CACHE_DURATION) {
                 console.log('[INFO] Cache đã hết hạn, cần cập nhật');
                 return false;
             }
+
+            // Nếu cache còn hợp lệ, load dữ liệu
+            const data = await fs.readFile(CACHE_FILE, 'utf8');
+            const cache = JSON.parse(data);
+            
+            this.tags = new Map(Object.entries(cache.tags));
+            this.categorizedTags = cache.categorizedTags;
+            this.lastUpdate = lastUpdate;
+            
+            const hoursRemaining = Math.floor((CACHE_DURATION - timeSinceLastUpdate) / (60 * 60 * 1000));
+            console.log(`[INFO] Cache còn hợp lệ (${status.totalTags} tags), còn ${hoursRemaining} giờ nữa mới cần cập nhật`);
+            return true;
         } catch (error) {
             console.log('[WARNING] Không tìm thấy cache hoặc cache bị hỏng');
             return false;
@@ -49,10 +107,10 @@ class TagManager {
         try {
             const cache = {
                 tags: Object.fromEntries(this.tags),
-                categorizedTags: this.categorizedTags,
-                lastUpdate: this.lastUpdate.toISOString()
+                categorizedTags: this.categorizedTags
             };
             await fs.writeFile(CACHE_FILE, JSON.stringify(cache, null, 2));
+            await this.saveCacheStatus();
             console.log('[INFO] Đã lưu cache thành công');
             return true;
         } catch (error) {
@@ -63,10 +121,8 @@ class TagManager {
 
     async updateTags() {
         try {
-            // Kiểm tra cache trước khi cập nhật
             const cacheValid = await this.loadCache();
             if (cacheValid) {
-                console.log('[INFO] Sử dụng cache hiện tại');
                 return true;
             }
 
@@ -77,14 +133,14 @@ class TagManager {
             let allTags = [];
 
             while (true) {
-                console.log(`[INFO] Đang tải trang ${page}...`);
                 try {
+                    console.log(`[INFO] Loading ${page}k data...`);
                     const url = `https://danbooru.donmai.us/tags.json?limit=1000&page=${page}&search[order]=count&search[hide_empty]=true`;
                     const response = await axios.get(url);
                     const tags = response.data;
 
                     if (!tags || tags.length === 0) {
-                        console.log('[INFO] Không còn tag nào để tải!');
+                        console.log('[INFO] Không còn tag nào để tải');
                         break;
                     }
 
@@ -95,19 +151,19 @@ class TagManager {
                     // await new Promise(resolve => setTimeout(resolve, 1000));
                 } catch (error) {
                     if (error.response && error.response.status === 410) {
-                        console.log('[INFO] Đã đạt đến giới hạn trang.');
+                        console.log('[INFO] Đã đạt đến giới hạn trang');
                         break;
                     }
+                    console.error(`[ERROR] Lỗi khi tải trang ${page}:`, error.message);
                     throw error;
                 }
             }
 
-            console.log(`[INFO] Đã tải tổng cộng ${allTags.length} tags. Đang phân loại...`);
-
-            // Lọc các tag có post_count > 0
+            console.log(`[INFO] Đã tải tổng cộng ${allTags.length} tags, đang xử lý...`);
+            
             const validTags = allTags.filter(tag => tag.post_count > 0);
-
-            // Phân loại tags
+            console.log(`[INFO] Có ${validTags.length} tags hợp lệ`);
+            
             for (const tag of validTags) {
                 const categoryName = CATEGORY_MAP[tag.category] || "Unknown";
                 if (!this.categorizedTags[categoryName]) {
@@ -128,24 +184,34 @@ class TagManager {
             }
 
             this.lastUpdate = new Date();
-            await this.saveCache();
-            console.log(`[INFO] Đã lưu ${this.tags.size} tags vào cache!`);
-            return true;
+            const saveResult = await this.saveCache();
+            
+            if (saveResult) {
+                console.log(`[INFO] Đã cập nhật ${this.tags.size} tags thành công`);
+                return true;
+            } else {
+                console.error('[ERROR] Không thể lưu cache');
+                return false;
+            }
         } catch (error) {
-            console.error('[ERROR] Lỗi khi cập nhật tags:', error);
+            console.error('[ERROR] Lỗi khi cập nhật tags:', error.message);
+            if (error.response) {
+                console.error('[ERROR] Chi tiết lỗi:', {
+                    status: error.response.status,
+                    data: error.response.data
+                });
+            }
             return false;
         }
     }
 
     async getSuggestions(query) {
         try {
-            // Kiểm tra và cập nhật cache nếu cần
             await this.updateTags();
 
             const suggestions = [];
             const queryLower = query.toLowerCase();
 
-            // Tìm kiếm trong tất cả các category
             for (const [category, tags] of Object.entries(this.categorizedTags)) {
                 for (const tag of tags) {
                     if (tag.name.toLowerCase().includes(queryLower)) {
@@ -169,13 +235,11 @@ class TagManager {
 
     async getPostsFromTag(tag, limit = 5) {
         try {
-            console.log(`[INFO] Đang tải ảnh cho tag: ${tag}...`);
             const url = `https://danbooru.donmai.us/posts.json?limit=${limit}&tags=${encodeURIComponent(tag)}`;
             const response = await axios.get(url);
             const posts = response.data;
 
             if (!posts || posts.length === 0) {
-                console.log(`[WARNING] Không tìm thấy ảnh cho tag: ${tag}`);
                 return [];
             }
 
@@ -190,11 +254,6 @@ class TagManager {
             console.error(`[ERROR] Lỗi khi tải ảnh cho tag: ${tag}`, error);
             return [];
         }
-    }
-
-    isCacheExpired() {
-        if (!this.lastUpdate) return true;
-        return Date.now() - this.lastUpdate.getTime() > CACHE_DURATION;
     }
 }
 
