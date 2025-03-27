@@ -149,17 +149,17 @@ module.exports = {
       if (illustration.characters && illustration.characters.length > 0) {
         imageEmbed.addFields({
           name: 'Characters',
-          value: illustration.characters.map(char => char.replace(/[_*~`]/g, "\\$&")).join(', ')
+          value: illustration.characters.map(char => char.replace(/[_*~`]/g, "\\$&")).join('\n')
         });
       }
 
       // All Tags
-      if (illustration.tags.length > 0) {
-        imageEmbed.addFields({
-          name: 'Tags',
-          value: illustration.tags.map(tag => tag.replace(/[_*~`]/g, "\\$&")).join(' ')
-        });
-      }
+      // if (illustration.tags.length > 0) {
+      //   imageEmbed.addFields({
+      //     name: 'Tags',
+      //     value: illustration.tags.map(tag => tag.replace(/[_*~`]/g, "\\$&")).join(' ')
+      //   });
+      // }
 
       await interaction.editReply({ embeds: [imageEmbed] });
 
