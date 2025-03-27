@@ -18,34 +18,43 @@ module.exports = {
         const channelName = messages.first().channel?.name
             ? `#${messages.first().channel.name}`
             : '#None';
-        
-        const lines = [];
-        lines.push(`\`\`\``);
+
+        // Chia nhỏ tin nhắn thành các nhóm nhỏ hơn
+        const messageGroups = [];
+        let currentGroup = [];
+        let currentLength = 0;
+        const MAX_LENGTH = 4000; // Để lại khoảng trống cho các thông tin khác
+
         for (const [, msg] of messages) {
             const username = msg.author?.username ?? 'Unknown';
-            lines.push(`[${username}]: ${msg.content || 'Không có nội dung'}`);
-        }
-        lines.push(`\`\`\``);
-
-        let messageString = `**${messages.size}** messages purged\n`;
-        messageString += lines.join('\n');
-
-        function chunkString(str, size) {
-            const chunks = [];
-            for (let i = 0; i < str.length; i += size) {
-                chunks.push(str.slice(i, i + size));
+            const content = msg.content || 'Không có nội dung';
+            const messageText = `[${username}]: ${content}\n`;
+            
+            if (currentLength + messageText.length > MAX_LENGTH) {
+                messageGroups.push(currentGroup);
+                currentGroup = [];
+                currentLength = 0;
             }
-            return chunks;
+            
+            currentGroup.push(messageText);
+            currentLength += messageText.length;
+        }
+        
+        if (currentGroup.length > 0) {
+            messageGroups.push(currentGroup);
         }
 
-        const pieces = chunkString(messageString, 4096);
-
-        pieces.forEach((piece, index) => {
+        // Gửi từng nhóm tin nhắn
+        for (let i = 0; i < messageGroups.length; i++) {
+            const group = messageGroups[i];
+            const description = `**${messages.size}** tin nhắn đã bị xóa\n\`\`\`\n${group.join('')}\`\`\`\nPage ${i + 1}/${messageGroups.length}`;
+            
             const embed = new EmbedBuilder()
                 .setColor('#ff0000')
-                .setTitle('Message Purged in ' + channelName)
-                .setDescription(piece + `\nPage ${index + 1}/${pieces.length}`);
-            logChannel.send({ embeds: [embed] });
-        });
+                .setTitle(`Tin nhắn bị xóa hàng loạt trong ${channelName}`)
+                .setDescription(description);
+            
+            await logChannel.send({ embeds: [embed] });
+        }
     },
 };
