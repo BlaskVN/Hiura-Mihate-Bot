@@ -1,5 +1,4 @@
 const axios = require('axios');
-const cheerio = require('cheerio');
 const fs = require('fs').promises;
 const path = require('path');
 
@@ -28,7 +27,18 @@ class TagManager {
             this.tags = new Map(Object.entries(cache.tags));
             this.categorizedTags = cache.categorizedTags;
             this.lastUpdate = new Date(cache.lastUpdate);
-            return true;
+            
+            // Kiểm tra thời gian cập nhật cuối cùng
+            const timeSinceLastUpdate = Date.now() - this.lastUpdate.getTime();
+            const hoursRemaining = Math.floor((CACHE_DURATION - timeSinceLastUpdate) / (60 * 60 * 1000));
+            
+            if (timeSinceLastUpdate < CACHE_DURATION) {
+                console.log(`[INFO] Cache còn hợp lệ, còn ${hoursRemaining} giờ nữa mới cần cập nhật`);
+                return true;
+            } else {
+                console.log('[INFO] Cache đã hết hạn, cần cập nhật');
+                return false;
+            }
         } catch (error) {
             console.log('[WARNING] Không tìm thấy cache hoặc cache bị hỏng');
             return false;
@@ -43,6 +53,7 @@ class TagManager {
                 lastUpdate: this.lastUpdate.toISOString()
             };
             await fs.writeFile(CACHE_FILE, JSON.stringify(cache, null, 2));
+            console.log('[INFO] Đã lưu cache thành công');
             return true;
         } catch (error) {
             console.error('[ERROR] Lỗi khi lưu cache:', error);
@@ -52,6 +63,13 @@ class TagManager {
 
     async updateTags() {
         try {
+            // Kiểm tra cache trước khi cập nhật
+            const cacheValid = await this.loadCache();
+            if (cacheValid) {
+                console.log('[INFO] Sử dụng cache hiện tại');
+                return true;
+            }
+
             console.log('[INFO] Bắt đầu cập nhật tags...');
             this.tags.clear();
             this.categorizedTags = {};
@@ -121,10 +139,8 @@ class TagManager {
 
     async getSuggestions(query) {
         try {
-            if (!this.tags.size || this.isCacheExpired()) {
-                console.log('[INFO] Cache hết hạn hoặc chưa có, bắt đầu cập nhật tags...');
-                await this.updateTags();
-            }
+            // Kiểm tra và cập nhật cache nếu cần
+            await this.updateTags();
 
             const suggestions = [];
             const queryLower = query.toLowerCase();

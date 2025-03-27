@@ -104,7 +104,8 @@ module.exports = {
       }
 
       if (searchTagOption) {
-        const suggestions = await tagManager.getSuggestions(searchTagOption);
+        const formattedSearchTag = formatTag(searchTagOption);
+        const suggestions = await tagManager.getSuggestions(formattedSearchTag);
         if (suggestions.length === 0) {
           return interaction.editReply('❌ Không tìm thấy gợi ý tag nào phù hợp.');
         }
@@ -117,7 +118,7 @@ module.exports = {
 
         suggestions.forEach(suggestion => {
           suggestionEmbed.addFields({
-            name: `${suggestion.name} (${suggestion.post_count})`,
+            name: `\`${suggestion.name}\` (${suggestion.post_count})`,
             value: `Type: ${suggestion.category}`
           });
         });
@@ -125,7 +126,7 @@ module.exports = {
         return interaction.editReply({ embeds: [suggestionEmbed] });
       }
 
-      tag = tagOption;
+      tag = formatTag(tagOption);
       const illustration = await fetchImage();
 
       if (!illustration) {

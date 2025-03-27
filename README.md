@@ -27,6 +27,7 @@ to host and maintain your own instance.
 - Loging messages
 - Check user infomation
 - Check server infomation
+- Danbooru search
 
 **Comming soon features:**
 - Moderation features (kick/ban/softban/hackban, mod-log, filter, chat cleanup)
